@@ -8,7 +8,7 @@ using MauiAppMinhasCompras.Models;
 
 namespace MauiAppMinhasCompras.Helpers
 {
-    // A classe SQLiteDatabaseHelper gerencia a interação com um banco de dados SQLite de forma assíncrona.
+   
     class SQLiteDatabaseHelper
     {
         // Propriedade privada que mantém a conexão assíncrona com o banco de dados SQLite.
