@@ -11,7 +11,7 @@ namespace MauiAppMinhasCompras.Helpers
    
     public class SQLiteDatabaseHelper
     {
-        // Propriedade privada que mantém a conexão assíncrona com o banco de dados SQLite.
+        // Propriedade que mantém a conexão assíncrona com o banco de dados SQLite.
         readonly SQLiteAsyncConnection _conn;
 
         // O construtor recebe o caminho para o banco de dados e cria a conexão.
