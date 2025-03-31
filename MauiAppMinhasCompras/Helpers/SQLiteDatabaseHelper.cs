@@ -9,7 +9,7 @@ using MauiAppMinhasCompras.Models;
 namespace MauiAppMinhasCompras.Helpers
 {
    
-    class SQLiteDatabaseHelper
+    public class SQLiteDatabaseHelper
     {
         // Propriedade privada que mantém a conexão assíncrona com o banco de dados SQLite.
         readonly SQLiteAsyncConnection _conn;
@@ -72,7 +72,7 @@ namespace MauiAppMinhasCompras.Helpers
         public Task<List<Produto>> Search(string q)
         {
             // Define a instrução SQL para realizar a busca na coluna "descricao".
-            string sql = "SELECT * Produto WHERE descricao LIKE '%" + q + "%'";
+            string sql = "SELECT * FROM Produto WHERE descricao LIKE '%" + q + "%'";
 
             // Executa a consulta assíncrona e retorna uma lista de produtos.
             return _conn.QueryAsync<Produto>(sql);
