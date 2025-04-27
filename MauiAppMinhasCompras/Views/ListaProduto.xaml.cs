@@ -1,6 +1,7 @@
 using MauiAppMinhasCompras.Models;
 using System.Collections.ObjectModel;
 using System.Threading.Tasks;
+using static MauiAppMinhasCompras.Views.ListaProduto;
 
 namespace MauiAppMinhasCompras.Views;
 
@@ -9,28 +10,30 @@ namespace MauiAppMinhasCompras.Views;
 public partial class ListaProduto : ContentPage
 {
     ObservableCollection<Produto> lista = new ObservableCollection<Produto>();
+    private CheckBox chk_categoria; // Declaração do campo chk_categoria
 
-	public ListaProduto()
-	{
-		InitializeComponent();
-        CarregarProdutos();
-        lst_produtos.ItemsSource = lista;
-        collectionCategorias.ItemsSource = categorias;
-    }
-    private async void CarregarProdutos(string? categoria = null)
+    public ListaProduto()
     {
-        if (categoria == null)
-        {
-            lst_produtos.ItemsSource = await App.Db.GetAll();
-        }
-        else
-        {
-            var todosProdutos = await App.Db.GetAll();
-            lst_produtos.ItemsSource = todosProdutos.Where(p => p.Categoria == categoria).ToList();
-        }
+        InitializeComponent();
+
+        // Atribui a CheckBox existente no XAML ao campo chk_categoria
+        chk_categoria = this.FindByName<CheckBox>("chk_categoria");
+
+        lst_produtos.ItemsSource = lista;
     }
+
     protected async override void OnAppearing()
     {
+        var categorias = new List<Categoria>
+        {
+            new Categoria { Nome = "Alimentos", IsSelected = false },
+            new Categoria { Nome = "Bebidas", IsSelected = false },
+            new Categoria { Nome = "Limpeza", IsSelected = false },
+            new Categoria { Nome = "Higiene", IsSelected = false }
+        };
+
+        cv_categorias.ItemsSource = categorias;
+
         try
         {
             lista.Clear();
@@ -38,13 +41,13 @@ public partial class ListaProduto : ContentPage
             List<Produto> tmp = await App.Db.GetAll();
 
             tmp.ForEach(i => lista.Add(i));
-        } 
-        catch (Exception) 
+        }
+        catch (Exception)
         {
             await DisplayAlert("Erro", "Erro ao carregar os produtos", "OK");
         }
-       
     }
+
     private void ToolbarItem_Clicked(object sender, EventArgs e)
     {
         try
@@ -55,9 +58,8 @@ public partial class ListaProduto : ContentPage
         {
             DisplayAlert("Erro", ex.Message, "OK");
         }
-
-
     }
+
     private void ToolbarItem_Clicked_1(object sender, EventArgs e)
     {
         double soma = lista.Sum(i => i.Total);
@@ -66,6 +68,7 @@ public partial class ListaProduto : ContentPage
 
         DisplayAlert("Total dos produtos", msg, "OK");
     }
+
     private async void Txt_search_TextChanged(object sender, TextChangedEventArgs e)
     {
         try
@@ -90,6 +93,7 @@ public partial class ListaProduto : ContentPage
             lst_produtos.IsRefreshing = false;
         }
     }
+
     private void MenuItem_Clicked(object sender, EventArgs e)
     {
         try
@@ -134,6 +138,7 @@ public partial class ListaProduto : ContentPage
             await DisplayAlert("Erro", "Erro ao excluir o produto", "OK");
         }
     }
+
     private async void lst_produtos_ItemSelected(object sender, SelectedItemChangedEventArgs e)
     {
         try
@@ -151,6 +156,7 @@ public partial class ListaProduto : ContentPage
             await DisplayAlert("Ops", ex.Message, "OK");
         }
     }
+
     private async void lst_produtos_Refreshing(object sender, EventArgs e)
     {
         try
@@ -183,39 +189,68 @@ public partial class ListaProduto : ContentPage
         await DisplayAlert("Relatório de Gastos", relatorio, "OK");
     }
 
-    private async void Button_Clicked_1(object sender, EventArgs e)
+    private async void chk_categoria_CheckedChanged(object sender, CheckedChangedEventArgs e)
     {
-        var categoriasSelecionadas = categorias
-            .Where(c => c.IsSelected)
-            .Select(c => c.Nome)
-            .ToList();
+        try
+        {
+            lista.Clear();
 
-        if (categoriasSelecionadas.Count == 0)
-        {
-            // Se nenhuma categoria for selecionada, exibe todos os produtos
-            CarregarProdutos();
+            if (e.Value) // Se o CheckBox estiver marcado
+            {
+                // Filtrar produtos pela categoria "Sem Categoria"
+                List<Produto> produtosFiltrados = await App.Db.GetByCategory("Sem Categoria");
+                produtosFiltrados.ForEach(p => lista.Add(p));
+            }
+            else
+            {
+                // Carregar todos os produtos
+                List<Produto> todosProdutos = await App.Db.GetAll();
+                todosProdutos.ForEach(p => lista.Add(p));
+            }
         }
-        else
+        catch (Exception)
         {
-            var todosProdutos = await App.Db.GetAll();
-            lst_produtos.ItemsSource = todosProdutos
-                .Where(p => categoriasSelecionadas.Contains(p.Categoria))
-                .ToList();
+            await DisplayAlert("Erro", "Erro ao alternar o filtro", "OK");
         }
     }
-
-    ObservableCollection<CategoriaFiltro> categorias = new ObservableCollection<CategoriaFiltro>
+    public class Categoria
     {
-        new CategoriaFiltro { Nome = "Alimentos" },
-        new CategoriaFiltro { Nome = "Bebidas" },
-        new CategoriaFiltro { Nome = "Limpeza" },
-        new CategoriaFiltro { Nome = "Higiene" }
-    };
-
-    public class CategoriaFiltro
-    {
-        public string Nome { get; set; } = string.Empty;
+        public string Nome { get; set; } = string.Empty; // Define um valor padrão para evitar nulos
         public bool IsSelected { get; set; }
+    }
+    private async void CheckBox_CheckedChanged(object sender, CheckedChangedEventArgs e)
+    {
+        try
+        {
+            // Obtenha as categorias selecionadas
+            var categoriasSelecionadas = ((List<Categoria>)cv_categorias.ItemsSource)
+                .Where(c => c.IsSelected)
+                .Select(c => c.Nome)
+                .ToList();
+
+            // Se nenhuma categoria estiver selecionada, exiba todos os produtos
+            if (categoriasSelecionadas.Count == 0)
+            {
+                lista.Clear();
+                var todosProdutos = await App.Db.GetAll();
+                todosProdutos.ForEach(p => lista.Add(p));
+                return;
+            }
+
+            // Filtre os produtos com base nas categorias selecionadas
+            var todosProdutosFiltrados = await App.Db.GetAll();
+            var produtosFiltrados = todosProdutosFiltrados
+                .Where(p => categoriasSelecionadas.Contains(p.Categoria))
+                .ToList();
+
+            // Atualize a lista exibida
+            lista.Clear();
+            produtosFiltrados.ForEach(p => lista.Add(p));
+        }
+        catch (Exception ex)
+        {
+            await DisplayAlert("Erro", $"Erro ao atualizar a lista: {ex.Message}", "OK");
+        }
     }
 }
 

@@ -16,5 +16,18 @@
         
         <Label Text="Quantidade do Produto:" />
         <Entry x:Name="txtQuantidade" Placeholder="Digite a quantidade do produto" />
+
+        
+        <Label Text="Categoria do Produto:" />
+        <Picker x:Name="pickerCategoria" Title="Selecione uma categoria">
+            <Picker.ItemsSource>
+            <x:Array Type="{x:Type x:String}">
+                <x:String>Alimentos</x:String>
+                <x:String>Bebidas</x:String>
+                <x:String>Limpeza</x:String>
+                <x:String>Higiene</x:String>
+            </x:Array>
+            </Picker.ItemsSource> 
+        </Picker>     
     </VerticalStackLayout>
 </ContentPage>

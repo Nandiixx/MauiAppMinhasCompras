@@ -4,7 +4,7 @@ namespace MauiAppMinhasCompras
 {
     public partial class App : Application
     {
-        static SQLiteDatabaseHelper _db;
+        static SQLiteDatabaseHelper? _db;
 
         public static SQLiteDatabaseHelper Db
         {
@@ -18,22 +18,21 @@ namespace MauiAppMinhasCompras
                                 Environment.SpecialFolder.LocalApplicationData),
                             "banco_sqlite_compras.db3");
 
-                    _db = new SQLiteDatabaseHelper(path);                     
+                    _db = new SQLiteDatabaseHelper(path);
                 }
 
                 return _db;
             }
         }
 
-
-
         public App()
         {
             InitializeComponent();
+        }
 
-            // MainPage = new AppShell();
-
-            MainPage = new NavigationPage(new Views.ListaProduto()); 
+        protected override Window CreateWindow(IActivationState? activationState)
+        {
+            return new Window(new NavigationPage(new Views.ListaProduto()));
         }
     }
 }

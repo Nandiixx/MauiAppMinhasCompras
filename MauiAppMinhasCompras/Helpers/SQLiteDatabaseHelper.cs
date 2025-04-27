@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using SQLite;
 using MauiAppMinhasCompras.Models;
 
+
 namespace MauiAppMinhasCompras.Helpers
 {
    
@@ -42,11 +43,11 @@ namespace MauiAppMinhasCompras.Helpers
         public Task<List<Produto>> Update(Produto p)
         {
             // Define a instrução SQL para atualização.
-            string sql = "UPDATE Produto SET Descricao=?, Quantidade=?, Preco=? WHERE Id=?";
+            string sql = "UPDATE Produto SET Categoria=?, Descricao=?, Quantidade=?, Preco=? WHERE Id=?";
 
             // Executa a consulta assíncrona com os parâmetros fornecidos.
             return _conn.QueryAsync<Produto>(
-                sql, p.Descricao, p.Quantidade, p.Preco, p.Id
+                sql, p.Categoria, p.Descricao, p.Quantidade, p.Preco, p.Id
             );
         }
 
@@ -58,6 +59,12 @@ namespace MauiAppMinhasCompras.Helpers
             // Deleta o produto da tabela onde o Id corresponde ao fornecido.
             return _conn.Table<Produto>().DeleteAsync(i => i.Id == id);
         }
+
+        public Task<List<Produto>> ObterTodosProdutos()
+        {
+            return _conn.Table<Produto>().ToListAsync();
+        }
+
 
         // Método para obter todos os registros da tabela "Produto".
         // Retorna uma lista de objetos Produto.
@@ -76,6 +83,12 @@ namespace MauiAppMinhasCompras.Helpers
 
             // Executa a consulta assíncrona e retorna uma lista de produtos.
             return _conn.QueryAsync<Produto>(sql);
+        }
+        public async Task<List<Produto>> GetByCategory(string categoria)
+        {
+            return await _conn.Table<Produto>()
+                .Where(p => string.IsNullOrWhiteSpace(p.Categoria) && categoria == "Sem Categoria")
+                .ToListAsync();
         }
     }
 }
